@@ -3,7 +3,7 @@ from ..db import db
 from datetime import datetime
 from sqlalchemy import ForeignKey
 from typing import Optional
-from ..models.goal import Goal
+from app.models.goal import Goal
 
 
 class Task(db.Model):
