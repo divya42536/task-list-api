@@ -1,13 +1,12 @@
-from .routes_utilities import validate_model, create_model, get_models_with_filters
-from flask import Blueprint , abort , make_response , request, Response 
-from app.models.task import Task
+from flask import Blueprint, request, Response, abort, make_response
 from ..db import db
+from ..models.task import Task
+from .routes_utilities import validate_model, create_model, get_models_with_filters
 from datetime import datetime
-import requests
 import os
+import requests
 
 bp = Blueprint("Task_bp", __name__, url_prefix="/tasks")
-SLACK_CHANNEL = "task-notifications"
 
 @bp.post("")
 def create_task():
@@ -42,6 +41,7 @@ def replace_task(id):
 @bp.delete("/<id>")
 def delete_task(id):
     task = validate_model(Task, id)
+
     db.session.delete(task)
     db.session.commit()
 
@@ -49,17 +49,35 @@ def delete_task(id):
 
 
 @bp.patch("/<id>/mark_complete")
+def mark_complete(id):
+    task = validate_model(Task, id)
+    task.title= "My Beautiful Task"
+    task.completed_at = datetime.now()
+    db.session.commit()
 
-def slack_send_mark_complete(id):
+    slack_url = "https://slack.com/api/chat.postMessage"
+    # slack_token = os.environ.get("SLACK_BOT_TOKEN")
     slack_token = os.environ.get('SLACK_BOT_TOKEN')
-    url = 'https://slack.com/api/chat.postMessage'
-    headers = {"Authorization": f"Bearer {slack_token}"} 
-    request_body = {
-        "channel": "task-notifications",
-        "text": f"Someone just completed the task {id}"
-        }
-    response = requests.post(url, headers=headers, data=request_body)
 
+    if slack_token:
+        headers = {
+            "Authorization": f"Bearer {slack_token}",
+            "Content-Type": "application/json"
+        }
+        message = {
+            "channel": "#task-notifications",
+            "text": f"Someone just completed the task: {task.title}"
+        }
+
+        try:
+            response = requests.post(slack_url, json=message, headers=headers)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            print(f"Slack notification failed: {e}")
+    else:
+        print("SLACK_BOT_TOKEN not found in environment variables.")
+
+    return Response(status=204, mimetype="application/json")
 
 
 @bp.patch("/<id>/mark_incomplete")
@@ -67,6 +85,5 @@ def mark_incomplete(id):
     task = validate_model(Task, id)
     task.completed_at = None
     db.session.commit()
-
     return Response(status=204, mimetype="application/json")
 

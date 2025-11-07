@@ -1,6 +1,7 @@
 from app.models.goal import Goal
 from app.db import db
 import pytest
+from app.models.task import Task
 
 
 # @pytest.mark.skip(reason="No way to test this feature yet")

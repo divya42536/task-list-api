@@ -3,6 +3,7 @@ from flask import abort, Blueprint, make_response, request , Response , jsonify
 from ..models.goal import Goal
 from ..models.task import Task
 from ..db import db
+from app import db
 
 
 
@@ -24,15 +25,16 @@ def create_task_with_goal_id(id):
         task = validate_model(Task, task_id)
         tasks_to_add.append(task)
 
+    # Overwrite existing tasks
     goal.tasks = tasks_to_add
     db.session.commit()
-
+    # db.session.refresh(goal)
     response_body = {
         "id": goal.id,
         "task_ids": [task.id for task in goal.tasks]
     }
 
-    return create_model(Task, response_body, status=200)
+    return jsonify(response_body), 200
 
 
 @bp.get("")
@@ -54,13 +56,13 @@ def get_all_goal_tasks(id):
         "title": goal.title,
         "tasks": tasks
     }
-    # return jsonify(response_body), 200
-    return Response(response_body ,status=200, mimetype="application/json")
+    return jsonify(response_body), 200
+    # return Response(response_body ,status=200, mimetype="application/json")
   
+ 
 @bp.put("/<id>")
 def replace_goal(id):
     goal = validate_model(Goal, id)
- 
     request_body = request.get_json()
     goal.title = request_body["title"]
  

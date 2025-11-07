@@ -1,9 +1,11 @@
+from datetime import datetime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from ..db import db
-from datetime import datetime
 from sqlalchemy import ForeignKey
 from typing import Optional
-from app.models.goal import Goal
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .goal import Goal
 
 
 class Task(db.Model):
@@ -30,7 +32,7 @@ class Task(db.Model):
     @classmethod
     def from_dict(cls, task_data):
         return cls(
-            title=task_data["title"],
-            description=task_data["description"],
-            completed_at=task_data.get("completed_at"),
-            goal_id=task_data.get("goal_id",None))
+            title= task_data["title"],
+            description= task_data["description"],
+            completed_at= task_data.get("completed_at"),
+            goal_id= task_data.get("goal_id",None))
