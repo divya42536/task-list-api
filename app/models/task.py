@@ -12,7 +12,7 @@ class Task(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     title: Mapped[str]
     description: Mapped[str]
-    completed_at : Mapped[datetime | None]
+    completed_at: Mapped[datetime | None]
     goal_id: Mapped[Optional[int]] = mapped_column(ForeignKey("goal.id"))
     goal: Mapped[Optional["Goal"]] = relationship(back_populates="tasks")
 
