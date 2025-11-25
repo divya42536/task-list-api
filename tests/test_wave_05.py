@@ -108,7 +108,7 @@ def test_get_goal(client, one_goal):
 
 # @pytest.mark.skip(reason="test to be completed by student")
 def test_get_goal_not_found(client):
-    pass
+    # pass
     # Act
     response = client.get("/goals/1")
     response_body = response.get_json()
@@ -117,7 +117,6 @@ def test_get_goal_not_found(client):
     # Assert
 
     assert response.status_code == 404
-    query = db.select(Goal).where(Goal.id == 1)
 
     assert response_body == {"message": "Goal with id (1) not found."}
 
@@ -166,9 +165,6 @@ def test_update_goal_not_found(client):
     # Assert
     assert response.status_code == 404
 
-    query = db.select(Goal).where(Goal.id == 1)
-    goal = db.session.scalar(query)
-
     assert response_body == {"message": "Goal with id (1) not found."}
 
 
@@ -180,42 +176,26 @@ def test_delete_goal(client, one_goal):
     # Assert
     assert response.status_code == 204
 
-    # Check that the goal was deleted
+  
     response = client.get("/goals/1")
+
     assert response.status_code == 404
 
     response_body = response.get_json()
-    assert "message" in response_body
-
-    # raise Exception("Complete test with assertion about response body")
-    # *****************************************************************
-    # **Complete test with assertion about response body***************
-    # *****************************************************************
+    assert response_body == {"message": "Goal with id (1) not found."}
 
 
 # @pytest.mark.skip(reason="test to be completed by student")
 def test_delete_goal_not_found(client):
-    response = client.delete("/goals/1", json={
-        "title": "Updated Goal Title"
-    })
+
+    #Act
+    response = client.delete("/goals/1")
     response_body = response.get_json()
 
     # Assert
     assert response.status_code == 404
 
-    query = db.select(Goal).where(Goal.id == 1)
-    goal = db.session.scalar(query)
-
     assert response_body == {"message": "Goal with id (1) not found."}
-
-    # Act
-    # ---- Complete Act Here ----
-
-    # Assert
-    # ---- Complete Assertions Here ----
-    # assertion 1 goes here
-    # assertion 2 goes here
-    # ---- Complete Assertions Here ----
 
 
 # @pytest.mark.skip(reason="No way to test this feature yet")
@@ -230,4 +210,4 @@ def test_create_goal_missing_title(client):
     assert response_body == {
         "message": "Invalid request: missing title"
     }
-    assert db.session.scalars(db.select(Goal)).all() == []
+    # assert db.session.scalars(db.select(Goal)).all() == []

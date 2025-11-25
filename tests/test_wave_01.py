@@ -1,6 +1,9 @@
 from app.models.task import Task
 from app.db import db
 import pytest
+from werkzeug.exceptions import HTTPException
+from app.routes.routes_utilities import validate_model
+
 
 # @pytest.mark.skip(reason="No way to test this feature yet")
 def test_task_to_dict():
@@ -213,9 +216,6 @@ def test_update_task_not_found(client):
 
     # Assert
     assert response.status_code == 404
-
-    query = db.select(Task).where(Task.id == 1)
-    task = db.session.scalar(query)
 
     assert response_body == {"message": "Task with id (1) not found."}
 

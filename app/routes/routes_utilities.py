@@ -1,6 +1,7 @@
-from flask import abort, make_response
+from flask import abort, make_response 
 from ..db import db
-from sqlalchemy import asc, desc
+import requests
+import os
 
 def validate_model(cls, id):
     try:
@@ -43,10 +44,24 @@ def get_models_with_filters(cls, filters=None):
     models_response = [model.to_dict() for model in models]
     return models_response
 
+def make_request_to_slack(task):
+    SLACK_URL = "https://slack.com/api/chat.postMessage"
+    SLACK_TOKEN = os.environ.get('SLACK_BOT_TOKEN')
 
+    if SLACK_TOKEN:
+        headers = {
+            "Authorization": f"Bearer {SLACK_TOKEN}",
+            "Content-Type": "application/json"
+        }
+        message = {
+            "channel": "#task-notifications",
+            "text": f"Someone just completed the task: {task.title}"
+        }
 
-
-
-
-
-
+        try:
+            response = requests.post(SLACK_URL, json=message, headers=headers)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            print(f"Slack notification failed: {e}")
+    else:
+        print("SLACK_BOT_TOKEN not found in environment variables.")

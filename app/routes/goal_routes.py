@@ -1,18 +1,15 @@
 from ..routes.routes_utilities import validate_model, create_model, get_models_with_filters
-from flask import abort, Blueprint, make_response, request , Response , jsonify
+from flask import abort, Blueprint, make_response, request , Response
 from ..models.goal import Goal
 from ..models.task import Task
 from ..db import db
-from app import db
-
-
+from datetime import datetime
 
 bp = Blueprint("goals_bp", __name__, url_prefix="/goals")
 
 @bp.post("")
 def create_goal():
     request_body = request.get_json()
-
     return create_model(Goal, request_body)
 
 @bp.post("/<id>/tasks")
@@ -24,22 +21,17 @@ def create_task_with_goal_id(id):
     for task_id in task_ids:
         task = validate_model(Task, task_id)
         tasks_to_add.append(task)
-
-    # Overwrite existing tasks
     goal.tasks = tasks_to_add
     db.session.commit()
-    # db.session.refresh(goal)
     response_body = {
         "id": goal.id,
         "task_ids": [task.id for task in goal.tasks]
     }
-
-    return jsonify(response_body), 200
+    return (response_body), 200
 
 
 @bp.get("")
 def get_all_goals():
-
     return get_models_with_filters(Goal, request.args)
 
 @bp.get("/<id>")
@@ -51,29 +43,22 @@ def get_goal(id):
 def get_all_goal_tasks(id):
     goal = validate_model(Goal, id)
     tasks = [task.to_dict() for task in goal.tasks]
-    response_body = {
-        "id": goal.id,
-        "title": goal.title,
-        "tasks": tasks
-    }
-    return jsonify(response_body), 200
-    # return Response(response_body ,status=200, mimetype="application/json")
-  
+    response_body=goal.to_dict()
+    response_body["tasks"] = tasks
+    return response_body, 200
  
+
 @bp.put("/<id>")
 def replace_goal(id):
     goal = validate_model(Goal, id)
     request_body = request.get_json()
     goal.title = request_body["title"]
- 
     db.session.commit()
     return Response(status=204, mimetype="application/json")
 
 @bp.delete("/<id>")
 def delete_goal(id):
     goal = validate_model(Goal, id)
-
     db.session.delete(goal)
     db.session.commit()
-
     return Response(status=204, mimetype="application/json")
